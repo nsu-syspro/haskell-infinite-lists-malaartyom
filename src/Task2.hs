@@ -19,6 +19,10 @@ instance Show a => Show (Stream a) where
 instance Foldable Stream where
   foldMap f (Stream v n) = f v <> foldMap f n
 
+
+instance Functor Stream where 
+  fmap f (Stream a s) = Stream (f a) (fmap f s)
+
 -- | Converts given list into stream
 --
 -- If the list is finite then it is continued
