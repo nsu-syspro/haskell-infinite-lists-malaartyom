@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-type-defaults #-}
 -- The above pragma enables all warnings
 
 module Task2 where
@@ -6,8 +7,17 @@ module Task2 where
 -- | Infinite stream of elements
 data Stream a = Stream a (Stream a)
 
+instance Show a => Show (Stream a) where
+  show (Stream a s) = showHelper a s 0 where
+      showHelper val (Stream nextVal stream) num
+       | num == 0 = "[" ++ show val  ++ ", " ++ showHelper nextVal stream (num + 1)
+       | num == 9 = show val ++"]"
+       | otherwise = show val ++ ", " ++ showHelper nextVal stream (num + 1)
+
+
+
 instance Foldable Stream where
-  foldMap = error "TODO: define foldMap"
+  foldMap f (Stream v n) = f v <> foldMap f n
 
 -- | Converts given list into stream
 --
@@ -22,7 +32,7 @@ instance Foldable Stream where
 -- [1,2,3,4,5,6,7,8,9,10]
 --
 fromList :: a -> [a] -> Stream a
-fromList = error "TODO: define fromList"
+fromList d = foldr Stream (Stream d (fromList d []))
 
 -- | Builds stream from given seed value by applying given step function
 --
@@ -36,7 +46,7 @@ fromList = error "TODO: define fromList"
 -- [5,4,3,2,1,0,1,2,3,4]
 --
 unfold :: (b -> (a, b)) -> b -> Stream a
-unfold = error "TODO: define unfold"
+unfold f e = Stream val (unfold f seed) where (val, seed) = f e
 
 -- | Returns infinite stream of natural numbers (excluding zero)
 --
@@ -46,7 +56,7 @@ unfold = error "TODO: define unfold"
 -- [1,2,3,4,5,6,7,8,9,10]
 --
 nats :: Stream Integer
-nats = error "TODO: define nats (Task2)"
+nats = unfold (\x -> (x, x + 1)) 1
 
 -- | Returns infinite stream of fibonacci numbers (starting with zero)
 --
@@ -56,7 +66,7 @@ nats = error "TODO: define nats (Task2)"
 -- [0,1,1,2,3,5,8,13,21,34]
 --
 fibs :: Stream Integer
-fibs = error "TODO: define fibs (Task2)"
+fibs = unfold (\(x, y) -> (x, (y, x + y))) (0, 1)
 
 -- | Returns infinite stream of prime numbers
 --
@@ -66,7 +76,7 @@ fibs = error "TODO: define fibs (Task2)"
 -- [2,3,5,7,11,13,17,19,23,29]
 --
 primes :: Stream Integer
-primes = error "TODO: define primes (Task2)"
+primes = unfold sieve (fromList 0 [2..])
 
 -- | One step of Sieve of Eratosthenes
 -- (to be used with 'unfoldr')
@@ -83,4 +93,7 @@ primes = error "TODO: define primes (Task2)"
 -- (3,[5,7,11,13,17,19,23,25,29,31])
 --
 sieve :: Stream Integer -> (Integer, Stream Integer)
-sieve = error "TODO: define sieve (Task2)"
+sieve (Stream a s) = (a, filterStream (\x -> x `mod` a /= 0) s)
+
+filterStream :: (Integer -> Bool) -> Stream Integer -> Stream Integer
+filterStream f (Stream a s) = if f a then Stream a (filterStream f s) else filterStream f s    

@@ -33,7 +33,7 @@ fibs = unfoldr (\(x, y) -> Just (x, (y, x + y))) (0, 1)
 -- [2,3,5,7,11,13,17,19,23,29]
 --
 primes :: [Integer]
-primes = unfoldr sieve nats
+primes = unfoldr sieve [2..]
 
 -- | One step of Sieve of Eratosthenes
 -- (to be used with 'unfoldr')
@@ -51,8 +51,10 @@ primes = unfoldr sieve nats
 --
 sieve :: [Integer] -> Maybe (Integer, [Integer])
 sieve []     =  Nothing
-sieve (x:xs) = if isPrime x then Just (x,filter (\n -> n `mod` x /= 0) xs) else sieve xs
+sieve (x:xs) = Just (x,filter (\n -> n `mod` x /= 0) xs)
 
+
+-- unused  
 isPrime :: Integer -> Bool
 isPrime n | n == 2    = True
           | n <  2    = False
